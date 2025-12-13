@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { studentsApi, Student, PaginatedStudents } from '@/api/students';
-import { authApi, RegisterData } from '@/api/auth';
+import { studentsApi, Student } from '@/api/students';
+import { authApi } from '@/api/auth';
 import Layout from '@/components/Layout';
 
 const StudentsPage: React.FC = () => {

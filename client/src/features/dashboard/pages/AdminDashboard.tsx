@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { studentsApi, PaginatedStudents } from '@/api/students';
-import { teachersApi, PaginatedTeachers } from '@/api/teachers';
-import { classesApi, PaginatedClasses } from '@/api/classes';
+import { studentsApi } from '@/api/students';
+import { teachersApi } from '@/api/teachers';
+import { classesApi } from '@/api/classes';
 import Layout from '@/components/Layout';
 
 interface DashboardStats {

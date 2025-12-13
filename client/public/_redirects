@@ -1,0 +1,5 @@
+/*
+  Placement: /client/_redirects
+  This file handles client-side routing for SPA
+*/
+/* /index.html 200

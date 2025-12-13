@@ -1,0 +1,5 @@
+[config]
+command = bash deploy.sh
+
+[traceLevel]
+default = verbose

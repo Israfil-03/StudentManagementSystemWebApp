@@ -1,7 +1,12 @@
 [build]
   base = "client"
-  command = "npm run build"
+  command = "npm install && npm run build"
   publish = "dist"
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- ../client/"
+
+[build.environment]
+  NPM_FLAGS = "--prefix=client"
+  NODE_VERSION = "18"
 
 [[redirects]]
   from = "/*"

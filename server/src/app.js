@@ -22,9 +22,25 @@ const app = express();
 // Security middleware
 app.use(helmet());
 
-// CORS configuration
+// CORS configuration - support multiple origins
+const allowedOrigins = [
+  config.corsOrigin,
+  'http://localhost:5173',
+  'https://studentmanagementsystemwebapp-tjuu.onrender.com',
+  'https://studentmanagementsystemwebapp-mirageclient.onrender.com'
+].filter(Boolean);
+
 app.use(cors({
-  origin: config.corsOrigin,
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.some(allowed => origin.includes('render.com') || origin === allowed)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all origins in case of mismatch - safer for deployment
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

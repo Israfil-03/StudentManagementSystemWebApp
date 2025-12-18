@@ -1,0 +1,196 @@
+// This is your Prisma schema file
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  STAFF
+}
+
+enum AttendanceStatus {
+  P
+  A
+  L
+}
+
+enum FeeStatus {
+  DUE
+  PAID
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  GRADUATED
+  TRANSFERRED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(STAFF)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs AuditLog[]
+
+  @@map("users")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+model Student {
+  id            String        @id @default(uuid())
+  studentId     String        @unique
+  firstName     String
+  lastName      String
+  email         String?       @unique
+  phone         String?
+  dateOfBirth   DateTime?
+  gender        Gender        @default(MALE)
+  address       String?
+  guardianName  String
+  guardianPhone String
+  guardianEmail String?
+  status        StudentStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  enrollments Enrollment[]
+  attendance  Attendance[]
+  fees        Fee[]
+
+  @@map("students")
+}
+
+enum TeacherStatus {
+  ACTIVE
+  INACTIVE
+  ON_LEAVE
+}
+
+model Teacher {
+  id             String        @id @default(uuid())
+  employeeId     String        @unique
+  firstName      String
+  lastName       String
+  email          String        @unique
+  phone          String?
+  specialization String?
+  qualification  String?
+  status         TeacherStatus @default(ACTIVE)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  classSections ClassSection[]
+
+  @@map("teachers")
+}
+
+enum ClassStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model ClassSection {
+  id             String      @id @default(uuid())
+  name           String
+  section        String?
+  grade          String
+  academicYear   String
+  roomNumber     String?
+  capacity       Int         @default(40)
+  status         ClassStatus @default(ACTIVE)
+  classTeacherId String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  classTeacher Teacher?     @relation(fields: [classTeacherId], references: [id])
+  enrollments  Enrollment[]
+  attendance   Attendance[]
+
+  @@unique([name, academicYear])
+  @@map("class_sections")
+}
+
+model Subject {
+  id        String   @id @default(uuid())
+  name      String
+  code      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subjects")
+}
+
+model Enrollment {
+  id             String   @id @default(uuid())
+  studentId      String
+  classSectionId String
+  academicYear   String
+  createdAt      DateTime @default(now())
+
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classSection ClassSection @relation(fields: [classSectionId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, classSectionId, academicYear])
+  @@map("enrollments")
+}
+
+model Attendance {
+  id             String           @id @default(uuid())
+  studentId      String
+  classSectionId String
+  date           DateTime         @db.Date
+  status         AttendanceStatus
+
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classSection ClassSection @relation(fields: [classSectionId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, date])
+  @@map("attendance")
+}
+
+model Fee {
+  id          String    @id @default(uuid())
+  studentId   String
+  amount      Float
+  dueDate     DateTime  @db.Date
+  status      FeeStatus @default(DUE)
+  paymentDate DateTime?
+  createdAt   DateTime  @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("fees")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  actorUserId String?
+  action      String
+  entity      String
+  entityId    String?
+  summary     String?
+  createdAt   DateTime @default(now())
+
+  actor User? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}

@@ -5,7 +5,21 @@ const { sendError } = require('../utils/response');
  * Global error handler middleware
  */
 const errorHandler = (err, req, res, next) => {
-  console.error('Error:', err);
+  // Safe error logging - avoid circular reference issues with Prisma errors
+  try {
+    console.error('Error:', err.message || err);
+    if (err.code) console.error('Error code:', err.code);
+    if (err.stack && process.env.NODE_ENV !== 'production') {
+      console.error('Stack:', err.stack);
+    }
+  } catch (logError) {
+    console.error('Error logging failed:', logError.message);
+  }
+
+  // Custom application errors (thrown with status, message, code)
+  if (err.status && err.message && err.code) {
+    return sendError(res, err.status, err.message, err.code);
+  }
 
   // Zod validation error
   if (err instanceof ZodError) {
@@ -32,8 +46,13 @@ const errorHandler = (err, req, res, next) => {
         // Foreign key constraint failed
         return sendError(res, 400, 'Related record not found', 'FOREIGN_KEY_ERROR');
       
+      case 'P2021':
+        // Table does not exist
+        return sendError(res, 500, 'Database not initialized. Please contact administrator.', 'DATABASE_ERROR');
+      
       default:
         console.error('Unhandled Prisma error code:', err.code);
+        return sendError(res, 500, 'Database error', 'DATABASE_ERROR');
     }
   }
 
@@ -49,7 +68,7 @@ const errorHandler = (err, req, res, next) => {
   // Default server error
   const message = process.env.NODE_ENV === 'production' 
     ? 'Internal server error' 
-    : err.message;
+    : err.message || 'Unknown error';
   
   return sendError(res, 500, message, 'INTERNAL_ERROR');
 };

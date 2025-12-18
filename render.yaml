@@ -11,7 +11,7 @@ services:
     runtime: node
     plan: free
     rootDir: server
-    buildCommand: npm ci
+    buildCommand: npm ci && npx prisma generate
     preDeployCommand: npx prisma migrate deploy && npx prisma db seed
     startCommand: npm run start
     healthCheckPath: /api/v1/health
@@ -27,7 +27,7 @@ services:
       - key: SUPER_ADMIN_PASSWORD
         sync: false
       - key: CORS_ORIGIN
-        value: https://mirage-client.onrender.com
+        value: https://studentmanagementsystemwebapp-mirageclient.onrender.com
 
   # Frontend Static Site
   - type: web
@@ -50,4 +50,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://mirage-api.onrender.com
+        value: https://studentmanagementsystemwebapp-mirageapi.onrender.com

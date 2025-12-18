@@ -34,6 +34,16 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Root endpoint
+app.get('/', (req, res) => {
+  sendResponse(res, 200, { 
+    message: 'Mirage Student Management System API',
+    version: '1.0.0',
+    health: '/api/v1/health',
+    docs: '/api/v1'
+  });
+});
+
 // Health check endpoint
 app.get('/api/v1/health', (req, res) => {
   sendResponse(res, 200, { 

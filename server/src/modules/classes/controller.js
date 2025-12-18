@@ -7,11 +7,11 @@ const ALLOWED_SORT_FIELDS = ['name', 'academicYear', 'createdAt', 'capacity'];
 const getAll = async (req, res, next) => {
   try {
     const { page, limit, skip } = getPagination(req.query);
-    const { academicYear, sort } = req.query;
+    const { academicYear, sort, search, status } = req.query;
     const orderBy = parseSort(sort, ALLOWED_SORT_FIELDS);
 
     const { classes, total } = await classService.getAll({ 
-      page, limit, skip, academicYear, orderBy 
+      page, limit, skip, search, status, academicYear, orderBy 
     });
 
     sendResponse(res, 200, { classes }, buildPaginationMeta(total, page, limit));

@@ -1,6 +1,22 @@
 const { sendError } = require('../utils/response');
 
 /**
+ * Clean query parameters - remove empty strings
+ * @param {object} query - Query object
+ * @returns {object} Cleaned query object
+ */
+const cleanQuery = (query) => {
+  const cleaned = {};
+  for (const [key, value] of Object.entries(query)) {
+    // Only include non-empty values
+    if (value !== '' && value !== undefined && value !== null) {
+      cleaned[key] = value;
+    }
+  }
+  return cleaned;
+};
+
+/**
  * Validation middleware factory
  * Validates request body, query, and params against Zod schemas
  * @param {object} schemas - Object containing body, query, params schemas
@@ -13,7 +29,9 @@ const validate = (schemas) => {
       }
       
       if (schemas.query) {
-        req.query = schemas.query.parse(req.query);
+        // Clean empty strings from query before validation
+        const cleanedQuery = cleanQuery(req.query);
+        req.query = schemas.query.parse(cleanedQuery);
       }
       
       if (schemas.params) {
